@@ -13,7 +13,7 @@ const db = mysql.createConnection({
 });
 
 
-app.post('/signup',(req,res) =>{
+app.post('/register',(req,res) =>{
     const sql = "INSERT INTO signup (`name`,`mobile`,`email`,`password`) VALUES (?)";
     const values = [
         req.body.name,
@@ -31,8 +31,31 @@ app.post('/signup',(req,res) =>{
       });
       
 })
+ 
+app.post('/login', (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
 
+    const sql = "SELECT * FROM signup WHERE email = ? AND password = ?";
+    const values = [email, password];
 
-app.listen(3006,()=> {
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error('Error executing MySQL query:', err);
+            return res.json("Error");
+        }
+
+        if (result.length > 0) {
+            // User found, login successful
+            const user = result[0];
+            return res.json({ message: "Login successful", user });
+        } else {
+            // User not found or password incorrect
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+    });
+});
+
+app.listen(3005,()=> {
     console.log("Listening on 3005")
 })
